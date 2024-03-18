@@ -9,6 +9,7 @@ namespace RabbitMqProductAPI.Data
         {
             Configuration = configuration;
         }
+
         protected override void OnConfiguring(DbContextOptionsBuilder options)
         {
             options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));

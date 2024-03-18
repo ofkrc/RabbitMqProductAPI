@@ -27,12 +27,21 @@ namespace RabbitMqProductAPI.Controllers
             return productService.GetProductById(Id);
         }
         [HttpPost("addproduct")]
-        public Product AddProduct(Product product)
+        public IActionResult AddProduct(Product product)
         {
-            var productData = productService.AddProduct(product);
-            //send the inserted product data to the queue and consumer will listening this data from queue
-            _rabitMQProducer.SendProductMessage(productData);
-            return productData;
+            try
+            {
+                // Product nesnesini RabbitMQ kuyruğuna gönder
+                _rabitMQProducer.SendProductMessage(product);
+
+                // Başarı durumunu döndür
+                return Ok("Ürün başarıyla RabbitMQ kuyruğuna gönderildi.");
+            }
+            catch (Exception ex)
+            {
+                // Hata durumunu döndür
+                return StatusCode(500, $"Hata: {ex.Message}");
+            }
         }
         [HttpPut("updateproduct")]
         public Product UpdateProduct(Product product)
