@@ -14,7 +14,10 @@ var configBuilder = new ConfigurationBuilder()
 
 var factory = new ConnectionFactory
 {
-    HostName = "localhost"
+    HostName = "localhost",
+    UserName = "admin",     
+    Password = "123456",    
+    Port = 5672
 };
 
 var connection = factory.CreateConnection();
@@ -34,22 +37,21 @@ using (var channel = connection.CreateModel())
         var message = Encoding.UTF8.GetString(body);
         Console.WriteLine($"product-create-example message received: {message}");
 
-        // Gelen JSON mesajını Product nesnesine dönüştür
         var product = JsonConvert.DeserializeObject<Product>(message);
 
-        // Veritabanına kayıt işlemi
-        using (var dbContext = new DbContextClass(configBuilder)) // Veritabanı bağlantısı
+
+        using (var dbContext = new DbContextClass(configBuilder)) 
         {
-            dbContext.Products.Add(product); // Ürünü veritabanına ekle
-            dbContext.SaveChanges(); // Değişiklikleri kaydet
+            dbContext.Products.Add(product);
+            dbContext.SaveChanges(); 
         }
 
         Console.WriteLine("Product added to the database.");
-        // Mesajı başarıyla işledikten sonra ACK gönder
+
         channel.BasicAck(deliveryTag: eventArgs.DeliveryTag, multiple: false);
     };
 
-    // ACK mekanizmasını etkinleştirerek mesajları al
+
     channel.BasicConsume(queue: "product-create-example", autoAck: false, consumer: consumer);
 
     Console.WriteLine("Consumer started. Press any key to exit.");

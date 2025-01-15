@@ -9,7 +9,10 @@ namespace RabbitMqProductAPI.RabbitMQ
         {
             var factory = new ConnectionFactory
             {
-                HostName = "localhost"
+                HostName = "localhost",
+                UserName = "admin",     // docker-compose.yml'da belirlediğimiz kullanıcı adı
+                Password = "123456",    // docker-compose.yml'da belirlediğimiz şifre
+                Port = 5672
             };
 
             try

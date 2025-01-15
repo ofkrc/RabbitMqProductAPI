@@ -2,6 +2,8 @@
 using RabbitMqProductAPI.Models;
 using RabbitMqProductAPI.RabbitMQ;
 using RabbitMqProductAPI.Services;
+using System;
+
 namespace RabbitMqProductAPI.Controllers
 {
     [Route("api/[controller]")]
@@ -30,16 +32,13 @@ namespace RabbitMqProductAPI.Controllers
         public IActionResult AddProduct(Product product)
         {
             try
-            {
-                // Product nesnesini RabbitMQ kuyruğuna gönder
+            {             
                 _rabitMQProducer.SendProductMessage(product);
 
-                // Başarı durumunu döndür
                 return Ok("Ürün başarıyla RabbitMQ kuyruğuna gönderildi.");
             }
             catch (Exception ex)
             {
-                // Hata durumunu döndür
                 return StatusCode(500, $"Hata: {ex.Message}");
             }
         }
@@ -52,6 +51,28 @@ namespace RabbitMqProductAPI.Controllers
         public bool DeleteProduct(int Id)
         {
             return productService.DeleteProduct(Id);
+        }
+        [HttpPost("upload-image")]
+        public IActionResult UploadImage([FromForm] IFormFile file)
+        {
+            try
+            {
+                if (file == null || file.Length == 0)
+                    return BadRequest("Dosya yüklenmedi");
+
+                using (var ms = new MemoryStream())
+                {
+                    file.CopyTo(ms);
+                    byte[] imageBytes = ms.ToArray();
+                    string base64String = Convert.ToBase64String(imageBytes);
+                    
+                    return Ok(new { imageData = base64String });
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Hata oluştu: {ex.Message}");
+            }
         }
     }
 }
